@@ -581,7 +581,13 @@ if (
 
     if user_input:
 
-        # ユーザー回答を履歴へ保存
+        # 今回答している質問
+        current_key = questions[st.session_state.step][0]
+
+        # ユーザー回答を保存
+        st.session_state.answers[current_key] = user_input
+
+        # 会話履歴にユーザー回答を追加
         st.session_state.messages.append(
             {
                 "role": "user",
@@ -589,31 +595,13 @@ if (
             }
         )
 
-
-        # 現在の質問項目
-        current_key = questions[
-            st.session_state.step
-        ][0]
-
-
-        # 回答保存
-        st.session_state.answers[
-            current_key
-        ] = user_input
-
-
-        # 次の質問
+        # 次の質問へ進む
         st.session_state.step += 1
 
+        # まだ質問が残っている場合
+        if st.session_state.step < len(questions):
 
-        if (
-            st.session_state.step
-            < len(questions)
-        ):
-
-            next_question = questions[
-                st.session_state.step
-            ][1]
+            next_question = questions[st.session_state.step][1]
 
             st.session_state.messages.append(
                 {
@@ -622,22 +610,57 @@ if (
                 }
             )
 
-
+        # 全質問が終わった場合
         else:
 
             summary = "\n".join(
                 f"{key}: {value}"
-                for key, value
-                in st.session_state.answers.items()
+                for key, value in st.session_state.answers.items()
             )
 
-st.session_state.messages.append(
-    {
-        "role": "assistant",
-        "content": (
-            "ありがとうございます。"
-            "ご希望条件と現在の生活状況を"
-            "整理しました。\n\n"
-        )
-    }
-)
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": (
+                        "ありがとうございます。"
+                        "ご希望条件と現在の生活状況を整理しました。\n\n"
+                        + summary
+                    )
+                }
+            )
+
+            # 登録物件をAIで分析
+            proposal = create_proposal()
+
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": (
+                        "登録物件を確認し、"
+                        "現在の暮らし方も踏まえて分析しました。\n\n"
+                        + proposal
+                    )
+                }
+            )
+
+            st.session_state.proposal_done = True
+
+        # 画面を再描画
+        st.rerun()
+
+
+# =========================================================
+# 最初からやり直す
+# =========================================================
+
+if st.session_state.proposal_done:
+
+    st.divider()
+
+    if st.button(
+        "🔄 最初からやり直す",
+        use_container_width=True
+    ):
+
+        st.session_state.clear()
+        st.rerun()
