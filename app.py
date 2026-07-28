@@ -238,7 +238,11 @@ questions = [
 # =========================================================
 # セッション初期化
 # =========================================================
+APP_VERSION = "v2"
 
+if st.session_state.get("app_version") != APP_VERSION:
+    st.session_state.clear()
+    st.session_state.app_version = APP_VERSION
 if "step" not in st.session_state:
     st.session_state.step = 0
 
