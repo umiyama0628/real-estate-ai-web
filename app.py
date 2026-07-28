@@ -627,9 +627,14 @@ if (
                 in st.session_state.answers.items()
             )
 
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content":
-                        "ありがとうございます。"
-     
+st.session_state.messages.append(
+    {
+        "role": "assistant",
+        "content": (
+            "ありがとうございます。"
+            "ご希望条件と現在の生活状況を"
+            "整理しました。\n\n"
+            + summary
+        )
+    }
+)
